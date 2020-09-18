@@ -1,1 +1,1 @@
-from .airtable import AirtableClientFactory
+from .airtable import AirtableClientFactory, AirtableEntity, AirtableSorter, SortDirection
