@@ -308,4 +308,3 @@ class AirtableClientFactory:
       raise ValueError("'base_id' and 'api_key' are required. Please through args to constructor or this method.")
 
     return AirtableClient(self.base_id, table_name, self.api_key, debug=self.debug)
-
