@@ -1,1 +1,1 @@
-import airtable
+from .airtable import *
