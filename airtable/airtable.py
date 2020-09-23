@@ -133,7 +133,7 @@ class AirtableClient(object):
   def _make_single_condition(self, field, value):
     return '{' + str(field) + '}="' + str(value) + '"'
 
-  def _make_params(self, formula=None, offset=None, sort=None, max_records=None, fields=None):
+  def _make_params(self, formula=None, offset=None, sort=None, max_records=None, fields=None, view=None):
     p = {}
     if formula:
       p['filterByFormula'] = formula
@@ -147,6 +147,8 @@ class AirtableClient(object):
       p['fields'] = []
       for field in fields:
         p['fields'].append(field)
+    if view:
+      p['view'] = view
 
     return p
   
@@ -185,9 +187,9 @@ class AirtableClient(object):
     
     return self._process_response(response)
 
-  def _get(self, formula=None, offset=None, sort=None, max_records=None, fields=None):
+  def _get(self, formula=None, offset=None, sort=None, max_records=None, fields=None, view=None):
     url = self.BASE_URL
-    p = self._make_params(formula, offset, sort, max_records, fields)
+    p = self._make_params(formula, offset, sort, max_records, fields, view)
     return self._request('get', url, params=p)
 
   def _post(self, data):
@@ -209,36 +211,36 @@ class AirtableClient(object):
   def _build_batch_record_objects(self, records):
     return [{"fields": record} for record in records]
 
-  def find(self, id, fields=None):
-    return self.find_by_formula('RECORD_ID()="' + str(id) + '"', fields=fields)
+  def find(self, id, fields=None, view=None):
+    return self.find_by_formula('RECORD_ID()="' + str(id) + '"', fields=fields, view=view)
   
-  def find_by(self, field, value, sort=None, fields=None):
-    return self.find_by_formula(self._make_single_condition(field, value), sort=sort, fields=fields)
+  def find_by(self, field, value, sort=None, fields=None, view=None):
+    return self.find_by_formula(self._make_single_condition(field, value), sort=sort, fields=fields, view=view)
 
-  def find_by_formula(self, formula, sort=None, fields=None):
-    return self.get_by_formula(formula, sort=sort, max_records=1, fields=fields)
+  def find_by_formula(self, formula, sort=None, fields=None, view=None):
+    return self.get_by_formula(formula, sort=sort, max_records=1, fields=fields, view=view)
   
-  def first(self, sort=None, fields=None):
-    return self.get(sort=sort, max_records=1, fields=fields)
+  def first(self, sort=None, fields=None, view=None):
+    return self.get(sort=sort, max_records=1, fields=fields, view=view)
   
-  def get(self, offset=None, sort=None, max_records=None, fields=None):
-    r = self._get(offset=offset, sort=sort, max_records=max_records, fields=fields)
+  def get(self, offset=None, sort=None, max_records=None, fields=None, view=None):
+    r = self._get(offset=offset, sort=sort, max_records=max_records, fields=fields, view=view)
     return AirtableEntity(records=r.get('records', []), offset=r.get('offset', None))
 
-  def get_by(self, field, value, offset=None, sort=None, max_records=None, fields=None):
-    return self.get_by_formula(self._make_single_condition(field, value), offset=offset, sort=sort, max_records=max_records, fields=fields)
+  def get_by(self, field, value, offset=None, sort=None, max_records=None, fields=None, view=None):
+    return self.get_by_formula(self._make_single_condition(field, value), offset=offset, sort=sort, max_records=max_records, fields=fields, view=view)
 
-  def get_by_formula(self, formula, offset=None, sort=None, max_records=None, fields=None):
-    r = self._get(formula=formula, offset=offset, sort=sort, max_records=max_records, fields=fields)
+  def get_by_formula(self, formula, offset=None, sort=None, max_records=None, fields=None, view=None):
+    r = self._get(formula=formula, offset=offset, sort=sort, max_records=max_records, fields=fields, view=view)
     return AirtableEntity(records=r.get('records', []), offset=r.get('offset', None))
   
-  def get_all(self, formula=None, sort=None, fields=None):
+  def get_all(self, formula=None, sort=None, fields=None, view=None):
     offset = None
 
     all_records = []
 
     while True:
-      r = self._get(formula=formula, offset=offset, sort=sort, fields=fields)
+      r = self._get(formula=formula, offset=offset, sort=sort, fields=fields, view=view)
       if len(r) == 0:
         break
       records = r.get('records')
@@ -250,8 +252,8 @@ class AirtableClient(object):
     
     return AirtableEntity(records=all_records)
   
-  def get_all_by(self, field, value, sort=None, fields=None):
-    return self.get_all(self._make_single_condition(field, value), sort=sort, fields=fields)
+  def get_all_by(self, field, value, sort=None, fields=None, view=None):
+    return self.get_all(self._make_single_condition(field, value), sort=sort, fields=fields, view=view)
 
   def insert(self, fields):
     return AirtableEntity(records=self._post(data={'fields': fields}))
