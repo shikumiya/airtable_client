@@ -16,13 +16,19 @@ Airtable用のPythonクライアントライブラリです。このライブラ
 
 ## Usage - 使用方法
 
+```bash
+pip install 'git+https://github.com/shikumiya/airtable_client.git'
+```
+
 ```py
+import airtable
+
 AIRTABLE_BASE_KEY = 'YOUR BASE KEY'
 AIRTABLE_API_KEY = 'YOUR API KEY'
 
 # Make factory instance.
 # ベース毎にファクトリクラスのインスタンスを生成します。
-atf = AirtableClientFactory(base_id=AIRTABLE_BASE_KEY, api_key=AIRTABLE_API_KEY, debug=True)
+atf = airtable.airtable.AirtableClientFactory(base_id=AIRTABLE_BASE_KEY, api_key=AIRTABLE_API_KEY, debug=True)
 
 # Make client instance.
 # テーブル毎にクライアントクラスのインスタンスを生成します。
