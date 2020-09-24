@@ -21,14 +21,14 @@ pip install 'git+https://github.com/shikumiya/airtable_client.git'
 ```
 
 ```py
-import airtable
+from airtable import AirtableClientFactory, AirtableSorter, SortDirection
 
 AIRTABLE_BASE_KEY = 'YOUR BASE KEY'
 AIRTABLE_API_KEY = 'YOUR API KEY'
 
 # Make factory instance.
 # ベース毎にファクトリクラスのインスタンスを生成します。
-atf = airtable.airtable.AirtableClientFactory(base_id=AIRTABLE_BASE_KEY, api_key=AIRTABLE_API_KEY, debug=True)
+atf = AirtableClientFactory(base_id=AIRTABLE_BASE_KEY, api_key=AIRTABLE_API_KEY, debug=True)
 
 # Make client instance.
 # テーブル毎にクライアントクラスのインスタンスを生成します。
