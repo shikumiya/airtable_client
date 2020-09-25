@@ -78,22 +78,31 @@ class AirtableSorter:
     return p
 
 class AirtableEntity(object):
+
   def __init__(self, records=[], offset=None):
-    self.records = records
-    self.offset = offset
+    self._records = records
+    self._offset = offset
     pass
+
+  @property
+  def records(self):
+    return self._records
+  
+  @property
+  def offset(self):
+    return self._offset
   
   def size(self):
     return len(self.records)
 
   def get(self, index=None):
     if self.size() == 1:
-      return self.records[0]
+      return self._records[0]
     elif self.size() > 1:
       if index:
-        return self.records[index]
+        return self._records[index]
       else:
-        return self.records
+        return self._records
     else:
       return []
   
