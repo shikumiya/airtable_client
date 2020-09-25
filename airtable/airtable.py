@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import requests
 import json
 import posixpath
@@ -15,13 +16,11 @@ class SortDirection(enum.Enum):
 
 
 class AirtableSorter:
-
   def __init__(self):
     self.sort = []
     pass
   
   def append(self, field, direction=SortDirection.ASC):
-
     if type(direction) is SortDirection:
       direction_value = direction.value
     else:
@@ -79,7 +78,6 @@ class AirtableSorter:
     return p
 
 class AirtableEntity(object):
-
   def __init__(self, records=[], offset=None):
     self.records = records
     self.offset = offset
@@ -103,16 +101,14 @@ class AirtableEntity(object):
     return [record['id'] for record in self.get()]
 
 class AirtableAuth(AuthBase):
-  
-    def __init__(self, api_key):
-        self.api_key = api_key
+  def __init__(self, api_key):
+    self.api_key = api_key
 
-    def __call__(self, r):
-        r.headers['Authorization'] = 'Bearer ' + self.api_key
-        return r
+  def __call__(self, r):
+    r.headers['Authorization'] = 'Bearer ' + self.api_key
+    return r
 
 class AirtableClient(object):
-
   VERSION = 'v0'
   API_BASE_URL = 'https://api.airtable.com'
   API_URL = posixpath.join(API_BASE_URL, VERSION)
@@ -120,7 +116,6 @@ class AirtableClient(object):
   MAX_RECORDS_PER_REQUEST = 10
 
   def __init__(self, base_id, table_name, api_key, debug=False):
-
     session = requests.Session()
     session.auth = AirtableAuth(api_key=api_key)
     self.session = session
@@ -205,8 +200,8 @@ class AirtableClient(object):
     return self._request('delete', url)
 
   def _chunk(self, iterable, length):
-      for i in range(0, len(iterable), length):
-          yield iterable[i : i + length]
+    for i in range(0, len(iterable), length):
+      yield iterable[i : i + length]
 
   def _build_batch_record_objects(self, records):
     return [{"fields": record} for record in records]
@@ -292,7 +287,6 @@ class AirtableClient(object):
     return AirtableEntity(records=deleted_records)
 
 class AirtableClientFactory:
-
   def __init__(self, base_id=None, api_key=None, debug=False):
     self.base_id = base_id
     self.api_key = api_key
@@ -300,7 +294,6 @@ class AirtableClientFactory:
     pass
 
   def create(self, table_name, base_id=None, api_key=None):
-
     if base_id:
       self.base_id = base_id
     if api_key:
