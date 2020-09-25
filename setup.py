@@ -1,15 +1,10 @@
-from sphinx.setup_command import BuildDoc
-cmdclass = {'build_sphinx': BuildDoc}
-
-release = '0.1.0'
-
 from setuptools import setup
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
 about = {}
-with open(os.path.join(here, "src", "__version__.py"), mode="r") as f:
+with open(os.path.join(here, "aoirtable", "__version__.py"), mode="r") as f:
     exec(f.read(), about)
 
 setup_requires = ["pytest-runner"]
@@ -43,10 +38,4 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: Implementation :: CPython",
     ],
-    command_options={
-        'build_sphinx': {
-            'project': ('setup.py', about["__name__"]),
-            'version': ('setup.py', about["__version__"]),
-            'release': ('setup.py', release),
-            'source_dir': ('setup.py', 'docs')}},
 )
