@@ -47,13 +47,15 @@ fields = {'Name': 'test'} # dummy data
 # [Sample]
 # - INPUT(JSON from HTTP response)
 # {
-#    'records': [
-#      'id': 'xxxxxxxxx',
-#      'fields': {
-#        'Name': 'foo',
-#        'Age': 16
-#      }
-#    ]
+#   'records': [
+#      {
+#        'id': 'xxxxxxxxx',
+#        'fields': {
+#          'Name': 'foo',
+#          'Age': 16
+#        }
+#     }
+#   ]
 # }
 #
 # - OUTPUT(dictionary)
@@ -69,6 +71,41 @@ print('get')
 entity = at.get(view='Grid view')
 # The 'records' property returns records contents with converted dictionary type are got from HTTP response json.
 # recordsプロパティでレスポンスJSON内のrecordsをdictにしたものを取得します。
+# [Sample]
+# - INPUT(JSON from HTTP response)
+# {
+#   'records': [
+#     {
+#       'id': 'xxxxxxxxx',
+#       'fields': {
+#         'Name': 'aaa',
+#         'Age': 16
+#       },
+#     {
+#       'id': 'xxxxxxxxx',
+#       'fields': {
+#         'Name': 'bbb',
+#         'Age': 18
+#       }
+#     }
+#   ]
+# }
+#
+# - OUTPUT(array)
+# [
+#   {
+#     'id': 'xxxxxxxxx',
+#     'fields': {
+#     'Name': 'aaa',
+#     'Age': 16
+#   },
+#   {
+#     'id': 'xxxxxxxxx',
+#     'fields': {
+#     'Name': 'bbb',
+#     'Age': 18
+#   }
+# ]
 print(entity.records)
 # The 'offset' property returns page offset value for getting next page contents.
 # offsetプロパティでページングのoffsetを取得します。
