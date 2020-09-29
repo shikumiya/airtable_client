@@ -227,23 +227,23 @@ print(record)
 # One record is newly registered. Pass a fields what is dict type.
 # fields（dict型）を作成し、1件のレコードを新規登録しています。
 # [Sample]
-# - arg1(dict)
+# - fields(dict)
 # {
 #   'Name': 'foo',
 #   'Age': 16
 # }
-record = at.insert(fields).get()
+record = at.insert(fields=fields).get()
 print(record)
 
 # Register multiple records at once. Create an array of fields and pass it.
 # 複数のレコードを一括で新規登録しています。fieldsの配列を作成して渡します。
 # [Sample]
-# - arg1(array)
+# - fields_list(list)
 # [
 #   {'Name': 'aaa', 'Age': 16},
 #   {'Name': 'bbb', 'Age': 18}
 # ]
-records = at.bulk_insert([fields, fields]).get()
+records = at.bulk_insert(fields_list=[fields, fields]).get()
 print(records)
 ```
 
@@ -266,11 +266,30 @@ print(record)
 
 # All records that match the criteria are specified and the records are deleted at once.
 # 条件に一致する全てのレコードIDを指定して、一括でレコードを削除しています。
+# [Sample]
+# - ids(list)
+# ['ID001', 'ID002', 'ID003]
 records = at.bulk_delete(ids=ids).get()
 print(records)
 
 # You are able to also specify records and delete the records at once. All records must contain a record ID.
 # recordsを指定して、一括でレコードを削除することもできます。recordsはidを含んでいる必要があります。
+# [Sample]
+# - records(list)
+# [
+#   {
+#     'id': 'A001',
+#     'fields': {...}
+#   },
+#   {
+#     'id': 'A002',
+#     'fields': {...}
+#   },
+#   {
+#     'id': 'A003',
+#     'fields': {...}
+#   }
+# ]
 records = at.bulk_delete(records=records).get()
 print(records)
 ```
