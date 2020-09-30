@@ -50,12 +50,12 @@ at = atf.create('TABLE NAME')
 ### Note #1 - ノート1
 
 ```py
-# All interfaces return AirtableEntity class.
+# All interfaces return Airtabler class.
 # When you would like to get all records contents, to use the 'get' method after call interfaces.
-# 操作系の処理は全てAirtableEntityクラス型を返します。
+# 操作系の処理は全てAirtablerクラス型を返します。
 # recordsの中身をdict型で取得したい場合はgetメソッドを使用してください。
 # [Sample]
-# - INPUT(JSON from HTTP response)
+# - INPUT(JSON from HTTP r)
 # {
 #   'records': [
 #      {
@@ -81,11 +81,11 @@ output = at.get_all().get()
 ```py
 # Searching by no conditions.
 # 条件指定なしで検索しています。
-entity = at.get(view='Grid view')
-# The 'records' property returns records contents with converted dictionary type are got from HTTP response json.
+r = at.get(view='Grid view')
+# The 'records' property returns records contents with converted dictionary type are got from HTTP r json.
 # recordsプロパティでレスポンスJSON内のrecordsをdictにしたものを取得します。
 # [Sample]
-# - INPUT(JSON from HTTP response)
+# - INPUT(JSON from HTTP r)
 # {
 #   'records': [
 #     {
@@ -109,42 +109,44 @@ entity = at.get(view='Grid view')
 #   {
 #     'id': 'xxxxxxxxx',
 #     'fields': {
-#     'Name': 'aaa',
-#     'Age': 16
+#       'Name': 'aaa',
+#       'Age': 16
+#      }
 #   },
 #   {
 #     'id': 'xxxxxxxxx',
 #     'fields': {
-#     'Name': 'bbb',
-#     'Age': 18
+#       'Name': 'bbb',
+#       'Age': 18
+#     }
 #   }
 # ]
-print(entity.records)
+print(r.records)
 # The 'offset' property returns page offset value for getting next page contents.
 # offsetプロパティでページングのoffsetを取得します。
-print(entity.offset)
+print(r.offset)
 # The 'get' method returns records contents by dictionary type.
 # getメソッドでrecordsの中身をdict型で取得します。
-print(entity.get())
+print(r.get())
 # The 'get_ids' method returns record ids what are filtered from records contents.
 # get_idsメソッドで取得されたレコードのidの配列を返します。
-print(entity.get_ids())
+print(r.get_ids())
 ```
 
 ```py
 # Search for matching records by specifying a value in one field.
 # ひとつのフィールドに値を指定して、一致するレコードを検索しています。1ページ目のみ取得します。
-entity = at.get_by('Name', 'test', view='Grid view')
-print(entity.records)
-print(entity.offset)
+r = at.get_by('Name', 'test', view='Grid view')
+print(r.records)
+print(r.offset)
 ```
 
 ```py
 # Searching for matching records by specifying a conditional expression. Gets only the first page.
 # 条件式を指定して、一致するレコードを検索しています。1ページ目のみ取得します。
-entity = at.get_by_formula('{Name}="test"', view='Grid view')
-print(entity.records)
-print(entity.offset)
+r = at.get_by_formula('{Name}="test"', view='Grid view')
+print(r.records)
+print(r.offset)
 ```
 
 ```py
@@ -278,15 +280,15 @@ print(records)
 # - records(list)
 # [
 #   {
-#     'id': 'A001',
+#     'id': 'xxxxxxxxx',
 #     'fields': {...}
 #   },
 #   {
-#     'id': 'A002',
+#     'id': 'xxxxxxxxx',
 #     'fields': {...}
 #   },
 #   {
-#     'id': 'A003',
+#     'id': 'xxxxxxxxx',
 #     'fields': {...}
 #   }
 # ]

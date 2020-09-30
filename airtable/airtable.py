@@ -164,27 +164,37 @@ class AirtableSorter:
       pass
     return p
 
-class AirtableEntity(object):
-  """エンティティクラス
+class AirtableResponse(object):
+  """レスポンスクラス
 
   :param object: objectを継承
   :type object: object
   """
-  def __init__(self, records=[], offset=None):
+  def __init__(self, records=[], offset=None, errors=[]):
     """コンストラクタ
 
     :param records: HTTPレスポンスのrecords, defaults to []
     :type records: list, optional
     :param offset: HTTPレスポンスから返却されるページオフセット値, defaults to None
     :type offset: string, optional
+    :param error: HTTPレスポンスから返却されるエラー文言, defaults to None
+    :type error: list, optional
     """
     self._records = records
     self._offset = offset
+    self._errors = errors
     pass
 
   @property
   def records(self):
     """recordsのgetter
+
+    >>> print(r.records)
+    [
+      {'id': 'XXX', 'fields': {...}},
+      {'id': 'XXX', 'fields': {...}},
+      {'id': 'XXX', 'fields': {...}}
+    ]
 
     :return: コンストラクタにセットしたrecords
     :rtype: list
@@ -199,6 +209,15 @@ class AirtableEntity(object):
     :rtype: string
     """
     return self._offset
+
+  @property
+  def errors(self):
+    """errorsのgetter
+
+    :return: コンストラクタにセットしたerrors
+    :rtype: list
+    """
+    return self._errors
   
   def size(self):
     """recordsの要素数を取得
@@ -212,6 +231,13 @@ class AirtableEntity(object):
     """recordsを取得
 
     0〜n件のレコードを返却。要素番号を指定した場合は、その要素のレコードを返却。
+
+    >>> print(r.get())
+    [
+      {'id': 'XXX', 'fields': {...}},
+      {'id': 'XXX', 'fields': {...}},
+      {'id': 'XXX', 'fields': {...}}
+    ]
 
     :param index: recordsの要素番号, defaults to None
     :type index: int, optional
@@ -230,6 +256,9 @@ class AirtableEntity(object):
   
   def get_ids(self):
     """レコードIDのリストを取得
+
+    >>> print(r.get_ids())
+    ['XXX', 'XXX', 'XXX']
 
     :return: レコードIDの一次元配列
     :rtype: list
@@ -481,6 +510,15 @@ class AirtableClient(object):
   def find(self, id, fields=None, view=None):
     """レコードIDで検索（1件取得）
 
+    >>> print(client.find('XXX').get())
+    {
+      'id': 'XXX',
+      'fields': {
+        'Name': 'aaa',
+        'Age': 16
+      }
+    }
+
     :param id: 検索対象のレコードID
     :type id: string
     :param fields: レスポンスに含めるフィールド名のリスト, defaults to None
@@ -488,13 +526,22 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     return self.find_by_formula('RECORD_ID()="' + str(id) + '"', fields=fields, view=view)
   
   def find_by(self, field, value, sort=None, fields=None, view=None):
     """対象フィールドの値に一致するレコードを検索（先頭の1件取得）
 
+    >>> print(client.find_by('Name', 'aaa').get())
+    {
+      'id': 'XXX',
+      'fields': {
+        'Name': 'aaa',
+        'Age': 16
+      }
+    }
+
     :param field: 検索対象のフィールド名
     :type field: string
     :param value: 検索対象のフィールド値
@@ -506,13 +553,22 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     return self.find_by_formula(self._make_single_condition(field, value), sort=sort, fields=fields, view=view)
 
   def find_by_formula(self, formula, sort=None, fields=None, view=None):
     """条件式に一致するレコードを検索（先頭の1件取得）
 
+    >>> print(client.find_by_formula('{Age}<20').get())
+    {
+      'id': 'XXX',
+      'fields': {
+        'Name': 'aaa',
+        'Age': 16
+      }
+    }
+
     :param formula: 任意の条件式(Airtableのformulaを参照)
     :type formula: string
     :param sort: 検索結果のソート順, defaults to None
@@ -522,13 +578,22 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     return self.get_by_formula(formula, sort=sort, max_records=1, fields=fields, view=view)
   
   def first(self, sort=None, fields=None, view=None):
     """条件指定なしで検索し、先頭の1件を取得
 
+    >>> print(client.first().get())
+    {
+      'id': 'XXX',
+      'fields': {
+        'Name': 'aaa',
+        'Age': 16
+      }
+    }
+
     :param sort: 検索結果のソート順, defaults to None
     :type sort: AirtableSorter|dict|list, optional
     :param fields: レスポンスに含めるフィールド名のリスト, defaults to None
@@ -536,13 +601,65 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     return self.get(sort=sort, max_records=1, fields=fields, view=view)
   
   def get(self, offset=None, sort=None, max_records=None, fields=None, view=None):
     """条件指定なしで検索し、1ページ分のレコードを取得
 
+    >>> print(client.get().records) # recordsを抽出（Airtable APIのレスポンスそのまま）
+    {
+      'records': [
+        {
+          'id': 'XXX',
+          'fields': {
+            'Name': 'aaa',
+            'Age': 16
+          }
+        },
+        {
+          'id': 'XXX',
+          'fields': {
+            'Name': 'bbb',
+            'Age': 18
+          }
+        },
+        {
+          'id': 'XXX',
+          'fields': {
+            'Name': 'ccc',
+            'Age': 16
+          }
+        }
+      ]
+    }
+
+    >>> print(client.get().get()) # recordsの中身だけ抽出
+    [
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'aaa',
+          'Age': 16
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'bbb',
+          'Age': 18
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'ccc',
+          'Age': 16
+        }
+      }
+    ]
+
     :param offset: ページングのオフセット値, defaults to None
     :type offset: string, optional
     :param sort: 検索結果のソート順, defaults to None
@@ -554,13 +671,31 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     r = self._get(offset=offset, sort=sort, max_records=max_records, fields=fields, view=view)
-    return AirtableEntity(records=r.get('records', []), offset=r.get('offset', None))
+    return AirtableResponse(records=r.get('records', []), offset=r.get('offset', None), errors=[r.get('error', None)])
 
   def get_by(self, field, value, offset=None, sort=None, max_records=None, fields=None, view=None):
     """対象フィールドの値に一致するレコードを検索（1ページ分のレコードを取得）
+
+    >>> print(client.get_by('Age', '16').get())
+    [
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'aaa',
+          'Age': 16
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'ccc',
+          'Age': 16
+        }
+      }
+    ]
 
     :param field: 検索対象のフィールド名
     :type field: string
@@ -577,13 +712,38 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     return self.get_by_formula(self._make_single_condition(field, value), offset=offset, sort=sort, max_records=max_records, fields=fields, view=view)
 
   def get_by_formula(self, formula, offset=None, sort=None, max_records=None, fields=None, view=None):
     """条件式に一致するレコードを検索（1ページ分のレコードを取得）
 
+    >>> print(client.get_by_formula('{Age}<20').get())
+    [
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'aaa',
+          'Age': 16
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'bbb',
+          'Age': 18
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'ccc',
+          'Age': 16
+        }
+      }
+    ]
+
     :param formula: 任意の条件式(Airtableのformulaを参照)
     :type formula: string
     :param offset: ページングのオフセット値, defaults to None
@@ -597,13 +757,38 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     r = self._get(formula=formula, offset=offset, sort=sort, max_records=max_records, fields=fields, view=view)
-    return AirtableEntity(records=r.get('records', []), offset=r.get('offset', None))
+    return AirtableResponse(records=r.get('records', []), offset=r.get('offset', None), errors=[r.get('error', None)])
   
   def get_all(self, formula=None, sort=None, fields=None, view=None):
     """全てのレコードを検索（全ページ）
+
+    >>> print(client.get_all().get())
+    [
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'aaa',
+          'Age': 16
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'bbb',
+          'Age': 18
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'ccc',
+          'Age': 16
+        }
+      }
+    ]
 
     :param formula: 任意の条件式(Airtableのformulaを参照)
     :type formula: string
@@ -614,27 +799,49 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     offset = None
 
     all_records = []
+    errors = []
 
     while True:
       r = self._get(formula=formula, offset=offset, sort=sort, fields=fields, view=view)
       if len(r) == 0:
         break
       records = r.get('records')
+      error = r.get('error')
+      if error:
+        errors.append(error)
       all_records.extend(records)
       offset = r.get('offset')
       if not offset:
         break
       time.sleep(self._API_LIMIT)
     
-    return AirtableEntity(records=all_records)
+    return AirtableResponse(records=all_records, errors=errors)
   
   def get_all_by(self, field, value, sort=None, fields=None, view=None):
     """対象フィールドの値に一致するレコードを検索（全ページ）
+
+    >>> print(client.get_all_by('Age', '16').get())
+    [
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'aaa',
+          'Age': 16
+        }
+      },
+      {
+        'id': 'XXX',
+        'fields': {
+          'Name': 'ccc',
+          'Age': 16
+        }
+      }
+    ]
 
     :param field: 検索対象のフィールド名
     :type field: string
@@ -647,86 +854,115 @@ class AirtableClient(object):
     :param view: 検索対象のビュー名, defaults to None
     :type view: string, optional
     :return: 検索結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     return self.get_all(self._make_single_condition(field, value), sort=sort, fields=fields, view=view)
 
   def insert(self, fields):
     """1件のレコードを新規登録
 
+    >>> client.insert({'Name': 'ddd', 'Age': 25})
+
     :param fields: レコードのフィールド
     :type fields: dict
     :return: 登録結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
-    return AirtableEntity(records=self._post(data={'fields': fields}))
+    r = self._post(data={'fields': fields})
+    return AirtableResponse(records=r.get('records', []), errors=[r.get('error', None)])
 
   def bulk_insert(self, fields_list):
     """一括でレコードを新規登録
 
+    >>> client.bulk_insert([{'Name': 'eee', 'Age': 23}, {'Name': 'fff', 'Age': 19})
+
     :param fields_list: レコードのフィールドリスト
     :type fields_list: list
     :return: 登録結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     inserted_records = []
+    errors = []
+
     for chunk_records in self._chunk(fields_list, self._MAX_RECORDS_PER_REQUEST):
         new_records = self._build_batch_records(chunk_records)
         r = self._post(data={"records": new_records})
-        inserted_records += r["records"]
+        error = r.get('error')
+        if error:
+          errors.append(error)
+        inserted_records += r.get('records')
         time.sleep(self._API_LIMIT)
-    return AirtableEntity(records=inserted_records)
+    return AirtableResponse(records=inserted_records, errors=errors)
 
   def update(self, id, fields):
     """対象のレコードを更新
+
+    >>> client.update('XXX', {Age': 20})
 
     :param id: 更新対象のレコードID
     :type id: string
     :param fields: 更新対象のフィールド（指定されたフィールドのみ上書き）
     :type fields: dict
     :return: 更新結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
-    return AirtableEntity(records=self._patch(id, data={'fields': fields}))
+    r = self._patch(id, data={'fields': fields})
+    return AirtableResponse(records=r.get('records', []), errors=[r.get('error', None)])
 
   def delete(self, id):
     """1件のレコードを削除
 
+    >>> client.delete('XXX')
+
     :param id: 削除対象のレコードID
     :type id: string
     :return: 削除結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
-    return AirtableEntity(records=self._delete(id))
+    r = self._delete(id)
+    return AirtableResponse(records=r.get('records', []), errors=[r.get('error', None)])
 
   def bulk_delete(self, ids=[], records=[]):
     """一括でレコードを削除
+
+    >>> client.bulk_delete(ids=['XXX', 'XXX'])
+
+    >>> client.bulk_delete(records=[{'id': 'XXX', 'fields': {...}}, {'id': 'XXX', 'fields': {...}}])
 
     :param ids: 削除対象のレコードIDリスト, defaults to []
     :type ids: list, optional
     :param records: 削除対象のレコードリスト(idを含めること), defaults to []
     :type records: list, optional
     :return: 削除結果
-    :rtype: AirtableEntity
+    :rtype: AirtableResponse
     """
     deleted_records = []
+    errors = []
 
+    # ids指定の場合
     if ids:
       for chunk_ids in self._chunk(ids, self._MAX_RECORDS_PER_REQUEST):
         for id in chunk_ids:
           r = self._delete(id)
+          error = r.get('error')
+          if error:
+            errors.append(error)
           deleted_records.append(r)
         time.sleep(self._API_LIMIT)
     
+    # records指定の場合
     if records:
       ids = [record['id'] for record in records]
       for chunk_ids in self._chunk(ids, self._MAX_RECORDS_PER_REQUEST):
         for id in chunk_ids:
           r = self._delete(id)
+          error = r.get('error')
+          if error:
+            errors.append(error)
           deleted_records.append(r)
         time.sleep(self._API_LIMIT)
 
-    return AirtableEntity(records=deleted_records)
+    return AirtableResponse(records=deleted_records, errors=errors)
 
 class AirtableClientFactory:
   """AirtableClientのファクトリクラス
@@ -753,6 +989,16 @@ class AirtableClientFactory:
 
   def create(self, table_name, base_id=None, api_key=None):
     """Airtableクライアントのインスタンスを生成して返却
+
+    1) ベース毎にインスタンスを生成する場合
+
+    >>> factory = AirtableClientFactory(base_id='XXX', api_key='XXX')
+    >>> client = factory.create(table_name='XXX')
+
+    2) create時に毎回ベースを指定する場合
+
+    >>> factory = AirtableClientFactory()
+    >>> client = factory.create(table_name='XXX', base_id='XXX', api_key='XXX')
 
     :param table_name: Airtableのテーブル名
     :type table_name: string
