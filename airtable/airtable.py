@@ -869,7 +869,7 @@ class AirtableClient(object):
     :rtype: AirtableResponse
     """
     r = self._post(data={'fields': fields})
-    return AirtableResponse(records=r.get('records', []), errors=[r.get('error', None)])
+    return AirtableResponse(records=r)
 
   def bulk_insert(self, fields_list):
     """一括でレコードを新規登録
@@ -882,17 +882,13 @@ class AirtableClient(object):
     :rtype: AirtableResponse
     """
     inserted_records = []
-    errors = []
 
     for chunk_records in self._chunk(fields_list, self._MAX_RECORDS_PER_REQUEST):
         new_records = self._build_batch_records(chunk_records)
         r = self._post(data={"records": new_records})
-        error = r.get('error')
-        if error:
-          errors.append(error)
         inserted_records += r.get('records')
         time.sleep(self._API_LIMIT)
-    return AirtableResponse(records=inserted_records, errors=errors)
+    return AirtableResponse(records=inserted_records)
 
   def update(self, id, fields):
     """対象のレコードを更新
@@ -907,7 +903,7 @@ class AirtableClient(object):
     :rtype: AirtableResponse
     """
     r = self._patch(id, data={'fields': fields})
-    return AirtableResponse(records=r.get('records', []), errors=[r.get('error', None)])
+    return AirtableResponse(records=r)
 
   def delete(self, id):
     """1件のレコードを削除
@@ -920,7 +916,7 @@ class AirtableClient(object):
     :rtype: AirtableResponse
     """
     r = self._delete(id)
-    return AirtableResponse(records=r.get('records', []), errors=[r.get('error', None)])
+    return AirtableResponse(records=r)
 
   def bulk_delete(self, ids=[], records=[]):
     """一括でレコードを削除
@@ -937,16 +933,12 @@ class AirtableClient(object):
     :rtype: AirtableResponse
     """
     deleted_records = []
-    errors = []
 
     # ids指定の場合
     if ids:
       for chunk_ids in self._chunk(ids, self._MAX_RECORDS_PER_REQUEST):
         for id in chunk_ids:
           r = self._delete(id)
-          error = r.get('error')
-          if error:
-            errors.append(error)
           deleted_records.append(r)
         time.sleep(self._API_LIMIT)
     
@@ -956,13 +948,10 @@ class AirtableClient(object):
       for chunk_ids in self._chunk(ids, self._MAX_RECORDS_PER_REQUEST):
         for id in chunk_ids:
           r = self._delete(id)
-          error = r.get('error')
-          if error:
-            errors.append(error)
           deleted_records.append(r)
         time.sleep(self._API_LIMIT)
 
-    return AirtableResponse(records=deleted_records, errors=errors)
+    return AirtableResponse(records=deleted_records)
 
 class AirtableClientFactory:
   """AirtableClientのファクトリクラス
