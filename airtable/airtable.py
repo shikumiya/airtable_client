@@ -263,7 +263,12 @@ class AirtableResponse(object):
     :return: レコードIDの一次元配列
     :rtype: list
     """
-    return [record['id'] for record in self.get()]
+    if self.size() == 1:
+      return self.get()['id']
+    elif self.size() > 1:
+      return [record['id'] for record in self.get()]
+    else:
+      return []
 
 class AirtableAuth(AuthBase):
   """Airtableの認証クラス
