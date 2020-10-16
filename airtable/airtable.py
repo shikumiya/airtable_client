@@ -225,7 +225,12 @@ class AirtableResponse(object):
     :return: recordsの要素数(=レコード数)
     :rtype: int
     """
-    return len(self.records)
+    if isinstance(self.records, list):
+      return len(self.records)
+    elif isinstance(self.records, dict):
+      return 1
+    else:
+      return 0
 
   def get(self, index=None):
     """recordsを取得
