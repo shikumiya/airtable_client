@@ -249,15 +249,13 @@ class AirtableResponse(object):
     :return: 0〜n件のレコード
     :rtype: list
     """
-    if self.size() == 1:
-      return self._records[0]
-    elif self.size() > 1:
+    if isinstance(self._records, dict):
+      return self._records
+    else:
       if index:
         return self._records[index]
       else:
         return self._records
-    else:
-      return []
   
   def get_ids(self):
     """レコードIDのリストを取得
