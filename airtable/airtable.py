@@ -177,8 +177,8 @@ class AirtableResponse(object):
     :type records: list, optional
     :param offset: HTTPレスポンスから返却されるページオフセット値, defaults to None
     :type offset: string, optional
-    :param error: HTTPレスポンスから返却されるエラー文言, defaults to None
-    :type error: list, optional
+    :param errors: HTTPレスポンスから返却されるエラー文言, defaults to []]
+    :type errors: list, optional
     """
     self._records = records
     self._offset = offset
