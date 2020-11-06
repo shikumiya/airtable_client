@@ -252,10 +252,16 @@ class AirtableResponse(object):
     if isinstance(self._records, dict):
       return self._records
     else:
-      if index:
-        return self._records[index]
+      if self.size() == 1:
+        return self._records[0]
+      elif self.size() > 1:
+        if index:
+          return self._records[index]
+        else:
+          return self._records
       else:
-        return self._records
+        return []
+
   
   def get_ids(self):
     """レコードIDのリストを取得
