@@ -479,6 +479,8 @@ class AirtableClient(object):
   def _patch(self, id, data):
     """PATCHリクエスト送信
 
+    :param id: レコードID
+    :type id: string
     :param data: リクエストJSONデータオブジェクト
     :type data: dict
     :return: HTTPレスポンスボディのJSONオブジェクト
@@ -490,8 +492,8 @@ class AirtableClient(object):
   def _delete(self, id):
     """DELETEリクエスト送信
 
-    :param data: リクエストJSONデータオブジェクト
-    :type data: dict
+    :param id: レコードID
+    :type id: string
     :return: HTTPレスポンスボディのJSONオブジェクト
     :rtype: dict
     """
