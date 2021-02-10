@@ -465,7 +465,7 @@ class AirtableClient(object):
     p = self._make_params(formula, offset, sort, max_records, fields, view)
     return self._request('get', url, params=p)
 
-  def _post(self, data, params=None):
+  def _post(self, data):
     """POSTリクエスト送信
 
     :param data: リクエストJSONデータオブジェクト
@@ -474,7 +474,7 @@ class AirtableClient(object):
     :rtype: dict
     """
     url = self.BASE_URL
-    return self._request('post', url, json_data=data, params=params)
+    return self._request('post', url, json_data=data)
 
   def _patch(self, id, data):
     """PATCHリクエスト送信
@@ -521,7 +521,7 @@ class AirtableClient(object):
     :return: recordsにセットするリスト
     :rtype: list
     """
-    return [{"fields": fields} for fields in fields_list]
+    return [{"fields": fields, 'typecast': True} for fields in fields_list]
 
   def find(self, id, fields=None, view=None):
     """レコードIDで検索（1件取得）
@@ -884,7 +884,7 @@ class AirtableClient(object):
     :return: 登録結果
     :rtype: AirtableResponse
     """
-    r = self._post(data={'fields': fields}, params={'typecast': True})
+    r = self._post(data={'fields': fields, 'typecast': True})
     return AirtableResponse(records=r)
 
   def bulk_insert(self, fields_list):
@@ -901,7 +901,7 @@ class AirtableClient(object):
 
     for chunk_records in self._chunk(fields_list, self._MAX_RECORDS_PER_REQUEST):
         new_records = self._build_batch_records(chunk_records)
-        r = self._post(data={"records": new_records}, params={'typecast': True})
+        r = self._post(data={"records": new_records})
         inserted_records += r.get('records')
         time.sleep(self._API_LIMIT)
     return AirtableResponse(records=inserted_records)
