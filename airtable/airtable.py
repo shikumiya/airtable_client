@@ -377,6 +377,8 @@ class AirtableClient(object):
         p['fields'].append(field)
     if view:
       p['view'] = view
+    
+    p['typecast'] = True
 
     return p
   
