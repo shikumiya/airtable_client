@@ -523,7 +523,7 @@ class AirtableClient(object):
     :return: recordsにセットするリスト
     :rtype: list
     """
-    return [{"fields": fields, 'typecast': True} for fields in fields_list]
+    return [{"fields": fields} for fields in fields_list]
 
   def find(self, id, fields=None, view=None):
     """レコードIDで検索（1件取得）
@@ -886,7 +886,7 @@ class AirtableClient(object):
     :return: 登録結果
     :rtype: AirtableResponse
     """
-    r = self._post(data={'fields': fields, 'typecast': True})
+    r = self._post(data={'fields': fields})
     return AirtableResponse(records=r)
 
   def bulk_insert(self, fields_list):
