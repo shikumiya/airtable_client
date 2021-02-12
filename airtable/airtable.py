@@ -474,6 +474,8 @@ class AirtableClient(object):
     :rtype: dict
     """
     url = self.BASE_URL
+    if self.debug:
+      print(data)
     return self._request('post', url, json_data=data)
 
   def _patch(self, id, data):
@@ -521,7 +523,7 @@ class AirtableClient(object):
     :return: recordsにセットするリスト
     :rtype: list
     """
-    return [{"fields": fields} for fields in fields_list]
+    return [{"fields": fields, 'typecast': 'true'} for fields in fields_list]
 
   def find(self, id, fields=None, view=None):
     """レコードIDで検索（1件取得）
@@ -884,7 +886,7 @@ class AirtableClient(object):
     :return: 登録結果
     :rtype: AirtableResponse
     """
-    r = self._post(data={'fields': fields})
+    r = self._post(data={'fields': fields, 'typecast': 'true'})
     return AirtableResponse(records=r)
 
   def bulk_insert(self, fields_list):
