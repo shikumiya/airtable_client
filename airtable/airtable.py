@@ -247,7 +247,7 @@ class AirtableResponse(object):
     :param index: recordsの要素番号, defaults to None
     :type index: int, optional
     :return: 0〜n件のレコード
-    :rtype: list
+    :rtype: list, dict
     """
     if isinstance(self._records, dict):
       return self._records
@@ -261,6 +261,29 @@ class AirtableResponse(object):
           return self._records
       else:
         return []
+  
+  def get_list(self, index=None):
+    """recordsを取得
+
+    0〜n件のレコードをlistで返却。要素番号を指定した場合は、その要素のレコードを返却。
+
+    >>> print(r.get())
+    [
+      {'id': 'XXX', 'fields': {...}},
+      {'id': 'XXX', 'fields': {...}},
+      {'id': 'XXX', 'fields': {...}}
+    ]
+
+    :param index: recordsの要素番号, defaults to None
+    :type index: int, optional
+    :return: 0〜n件のレコード
+    :rtype: list
+    """
+    records = self.get(index)
+    if isinstance(records, list):
+      return records
+    else:
+      return [records]
 
   
   def get_ids(self):
@@ -900,6 +923,8 @@ class AirtableClient(object):
     :rtype: AirtableResponse
     """
     inserted_records = []
+
+    # TODO fields_listがarrayかのチェック
 
     for chunk_records in self._chunk(fields_list, self._MAX_RECORDS_PER_REQUEST):
         new_records = self._build_batch_records(chunk_records)
